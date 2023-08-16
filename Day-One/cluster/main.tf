@@ -11,6 +11,14 @@ terraform {
   }
 }
 
+#call public_subnet data source
+data "aws_subnets" "public" {
+  filter {
+    name   = "tag:Name"
+    values = ["pubsub*-${var.environment}"]
+  }
+}
+
 # IAM Role for EKS to have access to the appropriate resources
 resource "aws_iam_role" "eks-iam-role" {
   name = var.eksIAMRole
@@ -53,7 +61,7 @@ resource "aws_eks_cluster" "eks" {
   version                   = var.k8sVersion
   vpc_config {
     # You can set these as just private subnets if the Control Plane will be private
-    subnet_ids = [var.pubsub1, var.pubsub2]
+    subnet_ids = toset(data.aws_subnets.public.ids)
   }
 
   depends_on = [
@@ -111,7 +119,7 @@ resource "aws_eks_node_group" "worker-node-group" {
   cluster_name    = aws_eks_cluster.eks.name
   node_group_name = "workernodes-${var.environment}"
   node_role_arn   = aws_iam_role.workernodes.arn
-  subnet_ids      = [var.pubsub1, var.pubsub2]
+  subnet_ids      = toset(data.aws_subnets.public.ids)
   instance_types  = var.instanceType
 
   scaling_config {
