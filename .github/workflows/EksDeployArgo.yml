@@ -1,7 +1,11 @@
 name: 'Deploy ArgoCD To EKS'
 
+# Only trigger, when the EKS cluster has been deployed successfully
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["EKS Deployment"]
+    types:
+      - completed
       
 env:
   EKS_REGION: "us-east-1"
