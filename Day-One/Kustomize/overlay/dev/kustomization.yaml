@@ -5,8 +5,4 @@ resources:
 
 replicas:
 - name: orders
-  count: 2
-- name: carts
-  count: 2
-- name: shipping
-  count: 3
+  count: 1
