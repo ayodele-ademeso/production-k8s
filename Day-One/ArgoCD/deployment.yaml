@@ -14,3 +14,19 @@ spec:
     namespace: sock-shop
 
 #This can also be automated using github actions
+
+# #### Deploying with ArgoCD using Kustomize ####
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: sockshopapp-kustomize
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: https://github.com/ayodele-ademeso/production-k8s.git
+#     targetRevision: HEAD
+#     path: Day-One/Kustomize/overlay/dev
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: sock-shop
