@@ -5,4 +5,6 @@ resources:
 
 replicas:
 - name: orders
-  count: 1
+  count: 2
+- name: carts
+  count: 2
