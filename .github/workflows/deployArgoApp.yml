@@ -1,14 +1,14 @@
 name: 'Deploy ArgoCD App with Application resource'
 
-# on:
-#   workflow_dispatch:
+on:
+  workflow_dispatch:
 
 # Only trigger, when the ArgoCD has been deployed on the cluster
-on:
-  workflow_run:
-    workflows: ["Deploy ArgoCD To EKS"]
-    types:
-      - completed
+# on:
+#   workflow_run:
+#     workflows: ["Deploy ArgoCD To EKS"]
+#     types:
+#       - completed
       
 env:
   EKS_REGION: "us-east-1"
