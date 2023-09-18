@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-application
+  namespace: argocd
+spec:
+  destination:
+    namespace: 'omkar'
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/captain-omkar/kubernetes-blue-green-deployment-with-argo-rollout.git
+    targetRevision: HEAD
+    path: base/nginx
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas
+  syncPolicy:
+        automated:
+         prune: true
+         selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - RespectIgnoreDifferences=true
