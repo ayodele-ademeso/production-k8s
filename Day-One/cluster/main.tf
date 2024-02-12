@@ -1,14 +1,8 @@
-terraform {
-  backend "s3" {
-    bucket = "ayodele-terraform-eks"
-    key    = "prod/eks-cluster.tfstate"
-    region = "us-east-1"
-  }
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-      version = "~> 4.60"
-    }
+locals {
+  common_tags = {
+    "Environment" = "${var.environment}"
+    "Managed By"  = "Terraform",
+    "Owned By"    = "Ayodele-UK"
   }
 }
 
@@ -16,13 +10,13 @@ terraform {
 data "aws_subnets" "public" {
   filter {
     name   = "tag:Name"
-    values = ["pubsub*-${var.environment}"]
+    values = ["ayodele-public*"]
   }
 }
 
 # IAM Role for EKS to have access to the appropriate resources
 resource "aws_iam_role" "eks-iam-role" {
-  name = var.eksIAMRole
+  name = "${var.owner}-${var.eksIAMRole}"
 
   path = "/"
 
@@ -55,7 +49,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly-EK
 
 ## Create the EKS cluster
 resource "aws_eks_cluster" "eks" {
-  name     = var.EKSClusterName
+  name     = "${var.owner}-${var.EKSClusterName}"
   role_arn = aws_iam_role.eks-iam-role.arn
 
   enabled_cluster_log_types = ["api", "audit", "scheduler", "controllerManager"]
@@ -65,6 +59,10 @@ resource "aws_eks_cluster" "eks" {
     subnet_ids = toset(data.aws_subnets.public.ids)
   }
 
+  tags = merge({
+    Name = "${var.owner}-${var.EKSClusterName}",
+  Type = "Public" }, local.common_tags)
+
   depends_on = [
     aws_iam_role.eks-iam-role,
   ]
@@ -72,7 +70,7 @@ resource "aws_eks_cluster" "eks" {
 
 ## Worker Nodes
 resource "aws_iam_role" "workernodes" {
-  name = var.workerNodeIAM
+  name = "${var.owner}-${var.workerNodeIAM}"
 
   assume_role_policy = jsonencode({
     Statement = [{
@@ -118,16 +116,24 @@ resource "aws_iam_role_policy_attachment" "AmazonEBSCSIDriverPolicy" {
 
 resource "aws_eks_node_group" "worker-node-group" {
   cluster_name    = aws_eks_cluster.eks.name
-  node_group_name = "workernodes-${var.environment}"
+  node_group_name = "${var.owner}${var.environment}-Workernodes"
   node_role_arn   = aws_iam_role.workernodes.arn
   subnet_ids      = toset(data.aws_subnets.public.ids)
   instance_types  = var.instanceType
+  ami_type        = "AL2_x86_64"
+  capacity_type   = "ON_DEMAND"
+  labels = {
+    Environment = var.environment,
+    Owner       = var.owner
+  }
 
   scaling_config {
     desired_size = var.desired_size
     max_size     = var.max_size
     min_size     = var.min_size
   }
+
+  tags = merge({ Name = "${var.owner}${var.environment}-WorkerNodes" }, local.common_tags)
 
   depends_on = [
     aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
@@ -136,6 +142,10 @@ resource "aws_eks_node_group" "worker-node-group" {
 }
 
 resource "aws_eks_addon" "csi" {
-  cluster_name = aws_eks_cluster.eks.name
-  addon_name   = "aws-ebs-csi-driver"
+  cluster_name  = aws_eks_cluster.eks.name
+  addon_name    = "aws-ebs-csi-driver"
+  # addon_version = "v1.7.1"
+  # For more information, see https://docs.aws.amazon.com/eks/latest/userguide/managing-add-ons.html
+  resolve_conflicts = "OVERWRITE"
+  tags              = local.common_tags
 }

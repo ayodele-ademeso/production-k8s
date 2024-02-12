@@ -1,31 +1,21 @@
-variable "pubsub1" {
-  type    = string
-  default = "subnet-0202a0bded720d2c7"
-}
-
-variable "pubsub2" {
-  type    = string
-  default = "subnet-0567afbeed513173d"
-}
-
 variable "eksIAMRole" {
   type    = string
-  default = "prodEKSCluster"
+  default = "devEKSCluster-role"
 }
 
 variable "EKSClusterName" {
   type    = string
-  default = "prodEKS"
+  default = "devEKS"
 }
 
 variable "k8sVersion" {
   type    = string
-  default = "1.26"
+  default = "1.27"
 }
 
 variable "workerNodeIAM" {
   type    = string
-  default = "prodWorkerNodes"
+  default = "devWorkerNodes-role"
 }
 
 variable "max_size" {
@@ -49,5 +39,11 @@ variable "instanceType" {
 
 variable "environment" {
   type    = string
-  default = "prod"
+  default = "dev"
+}
+
+variable "owner" {
+  description = "Owner of the resources created, used in resource names and tags"
+  type        = string
+  default     = "ayodele"
 }
