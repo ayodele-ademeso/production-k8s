@@ -10,7 +10,7 @@ variable "EKSClusterName" {
 
 variable "k8sVersion" {
   type    = string
-  default = "1.27"
+  default = "1.28"
 }
 
 variable "workerNodeIAM" {
@@ -20,20 +20,21 @@ variable "workerNodeIAM" {
 
 variable "max_size" {
   type    = string
-  default = 2
+  default = 3
 }
 
 variable "desired_size" {
   type    = string
-  default = 1
+  default = 2
 }
+
 variable "min_size" {
   type    = string
-  default = 1
+  default = 2
 }
 
 variable "instanceType" {
-  type    = list(any)
+  type    = list(string)
   default = ["t3.medium"]
 }
 
@@ -46,4 +47,14 @@ variable "owner" {
   description = "Owner of the resources created, used in resource names and tags"
   type        = string
   default     = "ayodele"
+}
+
+variable "node_capacity_type" {
+  type    = string
+  default = "ON_DEMAND"
+}
+
+variable "max_unavailable_percentage" {
+  type    = number
+  default = 50
 }
