@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: movies
+  name: movies
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      serviceAccountName: movie-sa
+      containers:
+      - image: 866934333672.dkr.ecr.eu-west-2.amazonaws.com/movie-service:v1
+        name: movies
+        ports:
+        - containerPort: 80
+          name: movies
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "20m"
+            memory: "256Mi"
+        # securityContext:
+        #   runAsNonRoot: true
+        #   runAsUser: 65534
