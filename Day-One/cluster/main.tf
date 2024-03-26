@@ -78,6 +78,7 @@ resource "aws_eks_cluster" "eks" {
   vpc_config {
     # You can set these as just private subnets if the Control Plane will be private
     subnet_ids = toset(data.aws_subnets.public.ids)
+    security_group_ids = []
   }
 
   tags = merge({
